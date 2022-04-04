@@ -33,7 +33,7 @@ def generate_grid(rows: int, columns: int) -> Grid:
 
 def display_grid(grid: Grid) -> None:
     for row in grid:
-        print("".join(row))
+        print(" ".join(row))
 
 
 def generate_domain(word: str, grid: Grid) -> List[List[GridLocation]]:
@@ -66,10 +66,17 @@ class WordSearchConstraint(Constraint[str, List[GridLocation]]):
         self.words: List[str] = words
 
     def satisfied(self, assignment: Dict[str, List[GridLocation]]) -> bool:
-        # if there are any duplicates grid locations then there is an overlap
-        all_locations = [locs for values in assignment.values() for locs in values]
-        return len(set(all_locations)) == len(all_locations)
-
+        all_locations: set = set()
+        all_lettered_locations: set = set()
+        for word, locs in assignment.items():
+            for letter, loc in zip(word, locs):
+                if loc in all_locations:
+                    if (letter, loc) not in all_lettered_locations:
+                        return False
+                      
+                all_locations.add(loc)
+                all_lettered_locations.add((letter, loc))
+        return True
 
 if __name__ == "__main__":
     grid: Grid = generate_grid(9, 9)
@@ -84,9 +91,6 @@ if __name__ == "__main__":
         print("No solution found!")
     else:
         for word, grid_locations in solution.items():
-            # random reverse half the time
-            if choice([True, False]):
-                grid_locations.reverse()
             for index, letter in enumerate(word):
                 (row, col) = (grid_locations[index].row, grid_locations[index].column)
                 grid[row][col] = letter
