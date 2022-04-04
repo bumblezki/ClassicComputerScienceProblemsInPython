@@ -1,5 +1,4 @@
 from typing import NamedTuple, List, Dict, Optional
-from random import choice
 from enum import Enum
 from csp import CSP, Constraint
 
@@ -10,11 +9,11 @@ class GridLocation(NamedTuple):
     column: int
 
 class ChipColor(Enum):
-    BLUE = "B "
-    GREEN = "G "
-    PURPLE = "P "
-    RED = "R "
-    YELLOW = "Y "
+    BLUE = "B"
+    GREEN = "G"
+    PURPLE = "P"
+    RED = "R"
+    YELLOW = "Y"
 
 
 class Chip(NamedTuple):
@@ -25,12 +24,12 @@ class Chip(NamedTuple):
 
 def generate_grid(rows: int, columns: int) -> Grid:
     # initialize grid with periods
-    return [[". " for _ in range(columns)] for _ in range(rows)]
+    return [["." for _ in range(columns)] for _ in range(rows)]
 
 
 def display_grid(grid: Grid) -> None:
     for row in grid:
-        print("".join(row))
+        print(" ".join(row))
 
 
 def generate_domain(chip: Chip, grid: Grid) -> List[List[GridLocation]]:
