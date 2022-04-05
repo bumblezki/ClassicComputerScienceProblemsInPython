@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import NamedTuple, List, Dict, Optional
+from typing import NamedTuple, List, Dict, Optional, Tuple
 from random import choice
 from string import ascii_uppercase
 from csp import CSP, Constraint
@@ -30,14 +30,16 @@ def generate_grid(rows: int, columns: int) -> Grid:
     # initialize grid with random letters
     return [[choice(ascii_uppercase) for c in range(columns)] for r in range(rows)]
 
+def reverse_string(string: str) -> str:
+    return string[::-1]
 
 def display_grid(grid: Grid) -> None:
     for row in grid:
         print(" ".join(row))
 
 
-def generate_domain(word: str, grid: Grid) -> List[List[GridLocation]]:
-    domain: List[List[GridLocation]] = []
+def generate_domain(word: str, grid: Grid) -> List[List[Tuple[str, GridLocation]]]:
+    domain: List[List[Tuple[str, GridLocation]]] = []
     height: int = len(grid)
     width: int = len(grid[0])
     length: int = len(word)
@@ -47,16 +49,19 @@ def generate_domain(word: str, grid: Grid) -> List[List[GridLocation]]:
             rows: range = range(row, row + length)
             if col + length <= width:
                 # left to right
-                domain.append([GridLocation(row, c) for c in columns])
+                domain.append([(l, GridLocation(row, c)) for l, c in zip(word, columns)])
+                domain.append([(l, GridLocation(row, c)) for l, c in zip(reverse_string(word), columns)])
                 # diagonal towards bottom right
                 if row + length <= height:
-                    domain.append([GridLocation(r, col + (r - row)) for r in rows])
+                    domain.append([(l, GridLocation(r, col + (r - row))) for l, r in zip(word, rows)])
+                    domain.append([(l, GridLocation(r, col + (r - row))) for l, r in zip(word, rows)])
             if row + length <= height:
                 # top to bottom
-                domain.append([GridLocation(r, col) for r in rows])
+                domain.append([(l, GridLocation(r, col)) for l, r in zip(word, rows)])
                 # diagonal towards bottom left
                 if col - length >= 0:
-                    domain.append([GridLocation(r, col - (r - row)) for r in rows])
+                    domain.append([(l, GridLocation(r, col - (r - row))) for l, r in zip(reverse_string(word), rows)])
+
     return domain
 
 
@@ -65,15 +70,14 @@ class WordSearchConstraint(Constraint[str, List[GridLocation]]):
         super().__init__(words)
         self.words: List[str] = words
 
-    def satisfied(self, assignment: Dict[str, List[GridLocation]]) -> bool:
+    def satisfied(self, assignment: Dict[str, List[Tuple[str, GridLocation]]]) -> bool:
         all_locations: set = set()
         all_lettered_locations: set = set()
-        for word, locs in assignment.items():
-            for letter, loc in zip(word, locs):
+        for locs in assignment.values():
+            for letter, loc in locs:
                 if loc in all_locations:
                     if (letter, loc) not in all_lettered_locations:
                         return False
-                      
                 all_locations.add(loc)
                 all_lettered_locations.add((letter, loc))
         return True
@@ -81,17 +85,17 @@ class WordSearchConstraint(Constraint[str, List[GridLocation]]):
 if __name__ == "__main__":
     grid: Grid = generate_grid(9, 9)
     words: List[str] = ["MATTHEW", "JOE", "MARY", "SARAH", "SALLY"]
-    locations: Dict[str, List[List[GridLocation]]] = {}
+    locations: Dict[str, List[List[Tuple[str, GridLocation]]]] = {}
     for word in words:
         locations[word] = generate_domain(word, grid)
-    csp: CSP[str, List[GridLocation]] = CSP(words, locations)
+    csp: CSP[str, List[Tuple[str, GridLocation]]] = CSP(words, locations)
     csp.add_constraint(WordSearchConstraint(words))
-    solution: Optional[Dict[str, List[GridLocation]]] = csp.backtracking_search()
+    solution: Optional[Dict[str, List[Tuple[str, GridLocation]]]] = csp.backtracking_search()
     if solution is None:
         print("No solution found!")
     else:
-        for word, grid_locations in solution.items():
-            for index, letter in enumerate(word):
-                (row, col) = (grid_locations[index].row, grid_locations[index].column)
+        for grid_locations in solution.values():
+            for letter, location in grid_locations:
+                (row, col) = (location.row, location.column)
                 grid[row][col] = letter
         display_grid(grid)
