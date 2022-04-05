@@ -54,12 +54,14 @@ def generate_domain(word: str, grid: Grid) -> List[List[Tuple[str, GridLocation]
                 # diagonal towards bottom right
                 if row + length <= height:
                     domain.append([(l, GridLocation(r, col + (r - row))) for l, r in zip(word, rows)])
-                    domain.append([(l, GridLocation(r, col + (r - row))) for l, r in zip(word, rows)])
+                    domain.append([(l, GridLocation(r, col + (r - row))) for l, r in zip(reverse_string(word), rows)])
             if row + length <= height:
                 # top to bottom
                 domain.append([(l, GridLocation(r, col)) for l, r in zip(word, rows)])
+                domain.append([(l, GridLocation(r, col)) for l, r in zip(reverse_string(word), rows)])
                 # diagonal towards bottom left
                 if col - length >= 0:
+                    domain.append([(l, GridLocation(r, col - (r - row))) for l, r in zip(word, rows)])
                     domain.append([(l, GridLocation(r, col - (r - row))) for l, r in zip(reverse_string(word), rows)])
 
     return domain
@@ -83,7 +85,7 @@ class WordSearchConstraint(Constraint[str, List[GridLocation]]):
         return True
 
 if __name__ == "__main__":
-    grid: Grid = generate_grid(9, 9)
+    grid: Grid = generate_grid(4, 9)
     words: List[str] = ["MATTHEW", "JOE", "MARY", "SARAH", "SALLY"]
     locations: Dict[str, List[List[Tuple[str, GridLocation]]]] = {}
     for word in words:
