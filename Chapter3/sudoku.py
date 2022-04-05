@@ -1,3 +1,4 @@
+from nntplib import GroupInfo
 from typing import NamedTuple, List, Dict, Optional, Tuple
 from csp import CSP, Constraint
 from enum import Enum
@@ -11,7 +12,6 @@ Grid = List[List[str]]  # type alias for grids
 class GridLocation(NamedTuple):
     row: int
     column: int
-
 
 class SudokuNumber(Enum):
     ONE = 1
@@ -28,7 +28,7 @@ class SudokuNumber(Enum):
 class Sudoku:
     def __init__(self):
         self.grid: Grid = self.generate_grid()
-
+        
     def generate_grid(self) -> Grid:
         return [["." for _ in range(NINE)] for _ in range(NINE)]
 
@@ -57,46 +57,45 @@ class Sudoku:
             print(" ".join(row))
 
 
-def generate_domain() -> List[List[GridLocation]]:
-    return [[GridLocation(row, col) for row in range(NINE) for col in range(NINE)]]
+def get_connected_grid_locations(all_locs: List[GridLocation], loc: GridLocation) -> List[GridLocation]:
+    connected_locs: List[GridLocation] = []
+    for other_loc in all_locs:
+        if loc != other_loc and (
+            Sudoku.in_same_column(loc, other_loc) or
+            Sudoku.on_same_row(loc, other_loc) or
+            Sudoku.in_same_square(loc, other_loc)
+        ):
+            connected_locs.append(other_loc)
+    return connected_locs
 
 
-class SudokuConstraint(Constraint[SudokuNumber, List[GridLocation]]):
-    def __init__(self, numbers: List[SudokuNumber]) -> None:
-        super().__init__(numbers)
-        self.numbers: List[SudokuNumber] = numbers
+class SudokuConstraint(Constraint[GridLocation, List[SudokuNumber]]):
+    def __init__(self, grid_locations: List[GridLocation]) -> None:
+        super().__init__(grid_locations)
+        self.grid_locations: List[GridLocation] = grid_locations
 
-    def satisfied(self, assignment: Dict[SudokuNumber, List[GridLocation]]) -> bool:        
-        assigned_locs: set = set()
-        for locs in assignment.values():
-            for loc in locs:
-                if loc in assigned_locs:
+    def satisfied(self, assignment: Dict[GridLocation, List[SudokuNumber]]) -> bool:        
+        all_locs: List[GridLocation] = [GridLocation(row, col) for row in range(NINE) for col in range(NINE)]
+        for loc, number in assignment.items():
+            connected_locs: List[GridLocation] = get_connected_grid_locations(all_locs, loc)
+            for loc in connected_locs:
+                if loc in assignment and assignment[loc] == number:
                     return False
-            for loc1, loc2 in combinations(locs, 2):
-                if (
-                    Sudoku.in_same_column(loc1, loc2) or
-                    Sudoku.in_same_square(loc1, loc2) or 
-                    Sudoku.on_same_row(loc1, loc2)
-                ): 
-                    return False
-            for loc in locs:
-                assigned_locs.add(loc)
         return True
 
 
 if __name__ == "__main__":
     sudoku: Sudoku = Sudoku()
-    locations: Dict[SudokuNumber, List[GridLocation]] = {}
-    numbers = [number for number in SudokuNumber]
-    for number in numbers:
-        locations[number] = generate_domain()
-    csp: CSP[SudokuNumber, List[List[GridLocation]]] = CSP(numbers, locations)
-    csp.add_constraint(SudokuConstraint(numbers))
-    solution: Optional[Dict[SudokuNumber, List[GridLocation]]] = csp.backtracking_search()
+    numbers: Dict[GridLocation, List[SudokuNumber]] = {}
+    all_locs: List[GridLocation] = [GridLocation(row, col) for row in range(NINE) for col in range(NINE)]
+    for loc in all_locs:
+        numbers[loc] = [number for number in SudokuNumber]
+    csp: CSP[GridLocation, List[List[GridLocation]]] = CSP(all_locs, numbers)
+    csp.add_constraint(SudokuConstraint(all_locs))
+    solution: Optional[Dict[GridLocation, List[SudokuNumber]]] = csp.backtracking_search()
     if solution is None:
         print("No solution found!")
     else:
-        for number, locs in solution.items():
-            for loc in locs:
-                sudoku.insert_number(number, loc)
+        for loc, number in solution.items():
+            sudoku.insert_number(number, loc)
         sudoku.display()
