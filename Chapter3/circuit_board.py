@@ -50,12 +50,12 @@ def generate_domain(chip: Chip, grid: Grid) -> List[List[GridLocation]]:
     return domain
 
 
-class CircuitBoardConstraint(Constraint[str, List[GridLocation]]):
+class CircuitBoardConstraint(Constraint[Chip, List[GridLocation]]):
     def __init__(self, chips: List[Chip]) -> None:
         super().__init__(chips)
         self.chips: List[Chip] = chips
 
-    def satisfied(self, assignment: Dict[str, List[GridLocation]]) -> bool:
+    def satisfied(self, assignment: Dict[Chip, List[GridLocation]]) -> bool:
         # if there are any duplicates grid locations then there is an overlap
         all_locations = [locs for values in assignment.values() for locs in values]
         return len(set(all_locations)) == len(all_locations)
@@ -70,12 +70,12 @@ if __name__ == "__main__":
         Chip(2, 8, ChipColor.RED),
         Chip(3, 3, ChipColor.YELLOW)
     ]
-    locations: Dict[str, List[List[GridLocation]]] = {}
+    locations: Dict[Chip, List[List[GridLocation]]] = {}
     for chip in chips:
         locations[chip] = generate_domain(chip, grid)
-    csp: CSP[str, List[GridLocation]] = CSP(chips, locations)
+    csp: CSP[Chip, List[GridLocation]] = CSP(chips, locations)
     csp.add_constraint(CircuitBoardConstraint(chips))
-    solution: Optional[Dict[str, List[GridLocation]]] = csp.backtracking_search()
+    solution: Optional[Dict[Chip, List[GridLocation]]] = csp.backtracking_search()
     if solution is None:
         print("No solution found!")
     else:

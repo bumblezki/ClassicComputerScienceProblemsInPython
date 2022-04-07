@@ -53,7 +53,11 @@ class Sudoku:
         self.grid[location.row][location.column] = str(number.value)
 
     def display(self) -> None:
-        for row in self.grid:
+        for i, row in enumerate(self.grid):
+            if i != 0 and i % THREE == 0:
+                print("------+-------+------")
+            row.insert(6, '|')
+            row.insert(3, '|')
             print(" ".join(row))
 
 
@@ -69,12 +73,12 @@ def get_connected_grid_locations(all_locs: List[GridLocation], loc: GridLocation
     return connected_locs
 
 
-class SudokuConstraint(Constraint[GridLocation, List[SudokuNumber]]):
+class SudokuConstraint(Constraint[GridLocation, SudokuNumber]):
     def __init__(self, grid_locations: List[GridLocation]) -> None:
         super().__init__(grid_locations)
         self.grid_locations: List[GridLocation] = grid_locations
 
-    def satisfied(self, assignment: Dict[GridLocation, List[SudokuNumber]]) -> bool:        
+    def satisfied(self, assignment: Dict[GridLocation, SudokuNumber]) -> bool:        
         all_locs: List[GridLocation] = [GridLocation(row, col) for row in range(NINE) for col in range(NINE)]
         for loc, number in assignment.items():
             connected_locs: List[GridLocation] = get_connected_grid_locations(all_locs, loc)
@@ -90,9 +94,9 @@ if __name__ == "__main__":
     all_locs: List[GridLocation] = [GridLocation(row, col) for row in range(NINE) for col in range(NINE)]
     for loc in all_locs:
         numbers[loc] = [number for number in SudokuNumber]
-    csp: CSP[GridLocation, List[List[GridLocation]]] = CSP(all_locs, numbers)
+    csp: CSP[GridLocation, SudokuNumber] = CSP(all_locs, numbers)
     csp.add_constraint(SudokuConstraint(all_locs))
-    solution: Optional[Dict[GridLocation, List[SudokuNumber]]] = csp.backtracking_search()
+    solution: Optional[Dict[GridLocation, SudokuNumber]] = csp.backtracking_search()
     if solution is None:
         print("No solution found!")
     else:

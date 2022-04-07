@@ -67,7 +67,7 @@ def generate_domain(word: str, grid: Grid) -> List[List[Tuple[str, GridLocation]
     return domain
 
 
-class WordSearchConstraint(Constraint[str, List[GridLocation]]):
+class WordSearchConstraint(Constraint[str, List[Tuple[str, GridLocation]]]):
     def __init__(self, words: List[str]) -> None:
         super().__init__(words)
         self.words: List[str] = words
