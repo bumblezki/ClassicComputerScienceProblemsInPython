@@ -47,11 +47,11 @@ def dijkstra(wg: WeightedGraph[V], root: V) -> Tuple[List[Optional[float]], Dict
 
     while not pq.empty:
         u: int = pq.pop().vertex # explore the next closest vertex
-        dist_u: float = distances[u] # should already have seen it
+        dist_u: Optional[float] = distances[u] # should already have seen it
         # look at every edge/vertex from the vertex in question
         for we in wg.edges_for_index(u):
             # the old distance to this vertex
-            dist_v: float = distances[we.v]
+            dist_v: Optional[float] = distances[we.v]
             # no old distance or found shorter path
             if dist_v is None or dist_v > we.weight + dist_u:
                 # update distance to this vertex
@@ -117,7 +117,7 @@ if __name__ == "__main__":
     city_graph2.add_edge_by_vertices("Philadelphia", "Washington", 123)
 
     distances, path_dict = dijkstra(city_graph2, "Los Angeles")
-    name_distance: Dict[str, Optional[int]] = distance_array_to_vertex_dict(city_graph2, distances)
+    name_distance: Dict[str, Optional[float]] = distance_array_to_vertex_dict(city_graph2, distances)
     print("Distances from Los Angeles:")
     for key, value in name_distance.items():
         print(f"{key} : {value}")
