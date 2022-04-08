@@ -4,7 +4,9 @@ from csp import CSP, Constraint
 from enum import Enum
 from itertools import combinations
 
+ZERO = 0
 THREE = 3
+SIX = 6
 NINE = 9
 
 Grid = List[List[str]]  # type alias for grids
@@ -54,10 +56,10 @@ class Sudoku:
 
     def display(self) -> None:
         for i, row in enumerate(self.grid):
-            if i != 0 and i % THREE == 0:
+            if i != ZERO and i % THREE == ZERO:
                 print("------+-------+------")
-            row.insert(6, '|')
-            row.insert(3, '|')
+            row.insert(SIX, '|')
+            row.insert(THREE, '|')
             print(" ".join(row))
 
 
