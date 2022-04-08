@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from textwrap import indent
 from typing import TypeVar, Generic, List, Optional
 from edge import Edge
 
@@ -38,6 +39,23 @@ class Graph(Generic[V]):
         self._vertices.append(vertex)
         self._edges.append([]) # add empty list for containing edges
         return self.vertex_count - 1 # return index of added vertex
+        
+    def remove_vertex(self, vertex: V) -> None:
+        u: int = self.index_of(vertex)
+        self.remove_vertex_by_index(u)
+
+    def remove_vertex_by_index(self, u: int) -> None:
+        for edge in reversed(self.edges_for_index(u)):
+            print(f"Edges {self._vertices[edge.u]} - {self._vertices[edge.v]}")
+            self.remove_edge(edge)
+        del self._edges[u]
+        del self._vertices[u]
+        for edges in self._edges:
+            for edge in edges:
+                if edge.u > u:
+                    edge.u -= 1
+                if edge.v > u:
+                    edge.v -= 1
 
     # This is an undirected graph,
     # so we always add edges in both directions
@@ -57,16 +75,9 @@ class Graph(Generic[V]):
         self.add_edge_by_indices(u, v)
 
     def remove_edge(self, edge: Edge) -> None:
-        try:
-            self._edges[edge.u].remove(edge)
-        except ValueError as e:
-            print(f"Could not find edge to delete: {edge} from {self._vertices[edge.u]} -> {self._vertices[edge.v]}.")
-            raise e
-        try:
-            self._edges[edge.v].remove(edge.reversed())
-        except ValueError as e:
-            print(f"Could not find edge to delete: {edge.reversed()} from {self._vertices[edge.v]} -> {self._vertices[edge.u]}.")
-            raise e
+        self._edges[edge.u].remove(edge)
+        self._edges[edge.v].remove(edge.reversed())
+        print(f"Removed {self._vertices[edge.u]} - {self._vertices[edge.v]}")
 
     def remove_edge_by_indices(self, u: int, v: int) -> None:
         edge: Edge = Edge(u, v)
