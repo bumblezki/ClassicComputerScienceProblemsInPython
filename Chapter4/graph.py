@@ -56,6 +56,27 @@ class Graph(Generic[V]):
         v: int = self._vertices.index(second)
         self.add_edge_by_indices(u, v)
 
+    def remove_edge(self, edge: Edge) -> None:
+        try:
+            self._edges[edge.u].remove(edge)
+        except ValueError as e:
+            print(f"Could not find edge to delete: {edge} from {self._vertices[edge.u]} -> {self._vertices[edge.v]}.")
+            raise e
+        try:
+            self._edges[edge.v].remove(edge.reversed())
+        except ValueError as e:
+            print(f"Could not find edge to delete: {edge.reversed()} from {self._vertices[edge.v]} -> {self._vertices[edge.u]}.")
+            raise e
+
+    def remove_edge_by_indices(self, u: int, v: int) -> None:
+        edge: Edge = Edge(u, v)
+        self.remove_edge(edge)
+
+    def remove_edge_by_vertices(self, first: V, second: V) -> None:
+        u: int = self._vertices.index(first)
+        v: int = self._vertices.index(second)
+        self.remove_edge_by_indices(u, v)
+
     # Find the vertex at a specific index
     def vertex_at(self, index: int) -> V:
         return self._vertices[index]
