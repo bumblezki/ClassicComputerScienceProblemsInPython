@@ -1,4 +1,5 @@
 from nntplib import GroupInfo
+from re import S
 from typing import NamedTuple, List, Dict, Optional, Tuple
 from csp import CSP, Constraint
 from enum import Enum
@@ -28,6 +29,8 @@ class SudokuNumber(Enum):
 
 
 class Sudoku:
+    starting_numbers: Dict[GridLocation, SudokuNumber] = {}
+
     def __init__(self):
         self.grid: Grid = self.generate_grid()
         
@@ -62,6 +65,9 @@ class Sudoku:
             row.insert(THREE, '|')
             print(" ".join(row))
 
+    def add_starting_number(self, loc: GridLocation, number: SudokuNumber) -> None:
+        self.starting_numbers[loc] = number
+
 
 def get_connected_grid_locations(all_locs: List[GridLocation], loc: GridLocation) -> List[GridLocation]:
     connected_locs: List[GridLocation] = []
@@ -84,6 +90,8 @@ class SudokuConstraint(Constraint[GridLocation, SudokuNumber]):
         all_locs: List[GridLocation] = [GridLocation(row, col) for row in range(NINE) for col in range(NINE)]
         for loc, number in assignment.items():
             connected_locs: List[GridLocation] = get_connected_grid_locations(all_locs, loc)
+            if loc in Sudoku.starting_numbers and assignment[loc] != sudoku.starting_numbers[loc]:
+                return False
             for loc in connected_locs:
                 if loc in assignment and assignment[loc] == number:
                     return False
@@ -92,6 +100,8 @@ class SudokuConstraint(Constraint[GridLocation, SudokuNumber]):
 
 if __name__ == "__main__":
     sudoku: Sudoku = Sudoku()
+    sudoku.add_starting_number(GridLocation(0,0), SudokuNumber.EIGHT)
+    sudoku.add_starting_number(GridLocation(3,6), SudokuNumber.FIVE)
     numbers: Dict[GridLocation, List[SudokuNumber]] = {}
     all_locs: List[GridLocation] = [GridLocation(row, col) for row in range(NINE) for col in range(NINE)]
     for loc in all_locs:
