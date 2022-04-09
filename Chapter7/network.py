@@ -57,7 +57,8 @@ class Network:
         for layer in self.layers[1:]: # skip input layer
             for neuron in layer.neurons:
                 for w in range(len(neuron.weights)):
-                    neuron.weights[w] = neuron.weights[w] + (neuron.learning_rate * (layer.previous_layer.output_cache[w]) * neuron.delta)
+                    if layer.previous_layer is not None:
+                        neuron.weights[w] = neuron.weights[w] + (neuron.learning_rate * (layer.previous_layer.output_cache[w]) * neuron.delta)
 
     # train() uses the results of outputs() run over many inputs and compared
     # against expecteds to feed backpropagate() and update_weights()

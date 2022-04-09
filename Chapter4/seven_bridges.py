@@ -5,7 +5,7 @@ from typing import  List
 Path = List[Edge] # type alias for path
 
 if __name__ == "__main__":
-    seven_bridges_graph: Graph[V] = Graph(["A", "B", "C", "D"])
+    seven_bridges_graph: Graph[str] = Graph(["A", "B", "C", "D"])
     seven_bridges_graph.add_edge_by_vertices("A", "B")
     seven_bridges_graph.add_edge_by_vertices("A", "B")
     seven_bridges_graph.add_edge_by_vertices("A", "C")

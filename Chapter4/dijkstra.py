@@ -32,7 +32,9 @@ class DijkstraNode:
     def __lt__(self, other: DijkstraNode) -> bool:
         return self.distance < other.distance
 
-    def __eq__(self, other: DijkstraNode) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, DijkstraNode):
+            return NotImplemented
         return self.distance == other.distance
 
 

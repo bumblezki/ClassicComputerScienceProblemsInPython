@@ -155,11 +155,11 @@ if __name__ == "__main__":
     sys.path.insert(0, '..') # so we can access the Chapter2 package in the parent directory
     from Chapter2.generic_search import bfs, Node, node_to_path
 
-    bfs_result: Optional[Node[V]] = bfs("Boston", lambda x: x == "Miami", city_graph.neighbors_for_vertex)
+    bfs_result: Optional[Node[str]] = bfs("Boston", lambda x: x == "Miami", city_graph.neighbors_for_vertex)
     if bfs_result is None:
         print("No solution found using breadth-first search!")
     else:
-        path: List[V] = node_to_path(bfs_result)
+        path: List[str] = node_to_path(bfs_result)
         print("Path from Boston to Miami:")
         print(path)
 
